@@ -3,10 +3,11 @@ version 8
 __lua__
 -- shenanijam 2017 game jam
 -- "slinging the banhammer"
-turntime = 150
+turntime = 25
 timeleft = 1 * turntime -- in ticks
 new = true
 ents = {}
+hammers = {}
 cur = {x = 0,
 							y = 0,
 							state = 0}
@@ -16,15 +17,18 @@ function _init()
 end
 
 function check_input()
-	if btnp(0) and cur.x >= 0 then
+	if btnp(0) and cur.x >= 4 then
 		cur.x -= 2
-	elseif btnp(1) and cur.x <= 16 then
+	elseif btnp(1) and cur.x <= 12 then
 		cur.x += 2
 	end
-	if btnp(2) and cur.x >= 0 then
+	if btnp(2) and cur.y >= 4 then
 		cur.y -= 2
-	elseif btnp(3) and cur.y <= 16 then
+	elseif btnp(3) and cur.y <= 12 then
 		cur.y += 2
+	end
+	if btnp(4) then
+		sling_hammer(cur.x,cur.y)
 	end
 end
 
@@ -43,13 +47,19 @@ function collect_ents()
 			end
 		end
 	end
-	print(ents)
 end
 
 function update_ents()
 	if timeleft == 0 then
 		infect()
 	end
+end
+
+function sling_hammer(x,y)
+	local ham = {x = x,
+			y = y,
+			state = 0}
+	add(hammers, ham)
 end
 
 function infect()
@@ -104,6 +114,23 @@ function infect()
 	end
 end
 
+function update_hammers()
+	if timeleft % 5 == 0 then
+		for h in all(hammers) do
+			h.state += 1
+			if h.state > 3 then
+				target = mget(h.x,h.y)
+				if fget(target) > 1 then
+					mset(h.x+16,h.y,40)
+					mset(h.x+17,h.y,41)
+					mset(h.x+16,h.y+1,56)
+					mset(h.x+17,h.y+1,57)
+				end
+			end
+		end
+	end
+end
+
 function _update()
 	timeleft -= 1
 	if timeleft % 10 == 0 then
@@ -117,6 +144,7 @@ function _update()
 	update_ents()
 	last = ents
 	ents = {}
+	update_hammers()
 	if timeleft <= 0 then
 		timeleft = turntime
 	end
@@ -135,6 +163,14 @@ function draw_board()
     map(16,0,0,0,16,16)
 end
 
+function draw_hammers()
+	for e in all(hammers) do
+		if e.state < 4 then
+			spr(32+(e.state*2), e.x*8,e.y*8,2,2)
+		end
+	end
+end
+
 function draw_cursor()
 	spr(10+(cur.state*2),cur.x*8,cur.y*8)
 	spr(11+(cur.state*2),(cur.x+1)*8,cur.y*8)
@@ -145,7 +181,7 @@ end
 function _draw()
 	rectfill(0,0,128,128,0)
 	draw_board()
-
+	draw_hammers()
 	draw_cursor()
 
 	--debugging
