@@ -8,8 +8,8 @@ timeleft = 1 * turntime -- in ticks
 new = true
 ents = {}
 hammers = {}
-cur = {x = 0,
-							y = 0,
+cur = {x = 2,
+							y = 2,
 							state = 0}
 
 function _init()
@@ -19,12 +19,12 @@ end
 function check_input()
 	if btnp(0) and cur.x >= 4 then
 		cur.x -= 2
-	elseif btnp(1) and cur.x <= 12 then
+	elseif btnp(1) and cur.x <= 10 then
 		cur.x += 2
 	end
 	if btnp(2) and cur.y >= 4 then
 		cur.y -= 2
-	elseif btnp(3) and cur.y <= 12 then
+	elseif btnp(3) and cur.y <= 10 then
 		cur.y += 2
 	end
 	if btnp(4) then
