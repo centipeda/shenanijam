@@ -31,7 +31,6 @@ function check_input()
 		cur.y += 2
 	end
 	if btnp(4) then
-		if check_dropped(cur.x,cur.y) then
 		sling_hammer(cur.x,cur.y)
 	 end
  end 
@@ -201,7 +200,7 @@ end
 
 function draw_board()
 	map(0,0,0,0,16,16)
-    map(16,0,0,0,16,16)
+ map(16,0,0,0,16,16)
 end
 
 function draw_hammers()
