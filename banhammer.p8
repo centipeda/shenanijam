@@ -8,14 +8,24 @@ turntime = 50 -- in ticks
 new = true
 ents = {}
 cur = {x = 0,
-							y = 0}
-curstate = 0
+							y = 0,
+							state = 0}
 function _init()
 
 end
 
 function check_input()
-
+	if btnp(0) and cur.x >= 0 then
+		cur.x -= 2
+	elseif btnp(1) and cur.x <= 16 then
+		cur.x += 2
+	end
+	if btnp(2) and cur.x >= 0 then
+		cur.y -= 2
+	elseif btnp(3) and cur.y <= 16 then
+		cur.y += 2
+	end
+end
 function collect_ents()
 	-- loops through the entire map
 	-- and checks whether each sprite
@@ -95,6 +105,12 @@ end
 
 function _update()
 	turntime -= 1
+	if turntime % 10 == 0 then
+		cur.state += 1
+	end
+	if cur.state == 3 then
+		cur.state = 0
+	end
 	check_input()
 	collect_ents()
 	update_ents()
@@ -115,8 +131,12 @@ function draw_board()
 end
 
 function draw_cursor()
-	
+	spr(10+(cur.state*2),cur.x*8,cur.y*8)
+	spr(11+(cur.state*2),(cur.x+1)*8,cur.y*8)
+	spr(26+(cur.state*2),cur.x*8,(cur.y+1)*8)
+	spr(27+(cur.state*2),(cur.x+1)*8,(cur.y+1)*8)
 end
+
 function _draw()
 	rectfill(0,0,128,128,15)		
 	draw_board()
