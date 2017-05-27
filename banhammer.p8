@@ -9,10 +9,12 @@ new = true
 ents = {}
 cur = {x = 0,
 							y = 0}
-curstate
+curstate = 0
 function _init()
 
 end
+
+function check_input()
 
 function collect_ents()
 	-- loops through the entire map
@@ -112,6 +114,9 @@ function draw_board()
 	map(level * 16,0,0,0,16,16)
 end
 
+function draw_cursor()
+	
+end
 function _draw()
 	rectfill(0,0,128,128,15)		
 	draw_board()
