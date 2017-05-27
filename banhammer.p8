@@ -32,7 +32,7 @@ function check_input()
 	end
 	if btnp(4) then
 		sling_hammer(cur.x,cur.y)
- end 
+  end 
 end
 
 function check_dropped(x,y)
