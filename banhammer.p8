@@ -1,7 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
--- shenanijam 2017 game
+-- shenanijam 2017 game jam
 -- "slinging the banhammer"
 level = 0
 turntime = 50 -- in ticks
@@ -10,6 +10,7 @@ ents = {}
 cur = {x = 0,
 							y = 0,
 							state = 0}
+							
 function _init()
 
 end
@@ -26,6 +27,7 @@ function check_input()
 		cur.y += 2
 	end
 end
+
 function collect_ents()
 	-- loops through the entire map
 	-- and checks whether each sprite
@@ -47,7 +49,7 @@ end
 function update_ents()
 	if turntime == 0 then
 		infect()
-		turntime = 150
+		turntime = 50
 	end
 end
 
@@ -67,29 +69,29 @@ function infect()
 		local d = mget(e.x,e.y+2)
 		if current == 44 then
 			local skip = true
-			if l == 40 and rnd(10) > 5 then
+			if l == 4 and rnd(10) > 5 then
 				mset(e.x-2,e.y,42)
 				mset(e.x-1,e.y,43)
 				mset(e.x-2,e.y+1,58)
 				mset(e.x-1,e.y+1,59)
 			end
-			if r == 40 and rnd(10) > 5 then
+			if r == 4 and rnd(10) > 5 then
 				mset(e.x+2,e.y,42)
-				mset(e.x+1,e.y,43)
+				mset(e.x+3,e.y,43)
 				mset(e.x+2,e.y+1,58)
-				mset(e.x+1,e.y+1,59)
+				mset(e.x+3,e.y+1,59)
 			end
-			if u == 40 and rnd(10) > 5 then
+			if u == 4 and rnd(10) > 5 then
 				mset(e.x,e.y-2,42)
 				mset(e.x+1,e.y-2,43)
 				mset(e.x,e.y-1,58)
 				mset(e.x+1,e.y-1,59)
 			end
-			if d == 40 and rnd(10) > 5 then
+			if d == 4 and rnd(10) > 5 then
 				mset(e.x,e.y+2,42)
 				mset(e.x+1,e.y+2,43)
-				mset(e.x,e.y+1,58)
-				mset(e.x+1,e.y+2,59)
+				mset(e.x,e.y+3,58)
+				mset(e.x+1,e.y+3,59)
 			end
 		end
 		if current == 42 and rnd(20) > 10 and
