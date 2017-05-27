@@ -12,7 +12,6 @@ cur = {x = 2,
 							y = 2,
 							state = 0}
 
-function _init()
 hearts={}
 hearttrans = {01,17}
 
@@ -34,7 +33,12 @@ function check_input()
 	if btnp(4) then
 		if check_dropped(cur.x,cur.y) then
 		sling_hammer(cur.x,cur.y)
-	end
+	 end
+ end 
+end
+
+function check_dropped(x,y)
+ return true
 end
 
 function collect_ents()
@@ -60,6 +64,7 @@ function update_ents()
 	end
 end
 
+--slingin' hammers
 function sling_hammer(x,y)
 	local ham = {x = x,
 			y = y,
@@ -119,6 +124,7 @@ function infect()
 	end
 end
 
+--hammer logic
 function update_hammers()
 	if timeleft % 5 == 0 then
 		for h in all(hammers) do
@@ -130,6 +136,8 @@ function update_hammers()
 					mset(h.x+17,h.y,target-1)
 					mset(h.x+16,h.y+1,target+14)
 					mset(h.x+17,h.y+1,target+15)
+    elseif fget(target) == 1 then
+     hurt_normal()
 				end
 			end
 		end
@@ -162,7 +170,6 @@ end
 function hurt_normal()
  del(hearts,hearts[#hearts])
 end
----
 
 function _update()
 	timeleft -= 1
@@ -181,6 +188,7 @@ function _update()
 	if timeleft <= 0 then
 		timeleft = turntime
 	end
+
 end
 
 function printents(ent)
