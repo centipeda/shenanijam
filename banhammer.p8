@@ -13,6 +13,16 @@ cur = {x = 2,
 							state = 0}
 hearts={}
 hearttrans = {01,17}
+losetext = {
+" _   _    __  __    _    ____     ____  ____   ___ ___ ",
+"| | | |  |  \\/  |  / \\  |  _ \\   | __ )|  _ \\ / _ \\__ \\ ",
+"| | | |  | |\\/| | / _ \\ | | | |  |  _ \\| |_) | | | |/ /",
+"| |_| |  | |  | |/ ___ \\| |_| |  | |_) |  _ <| |_| |_| ",
+" \\___/   |_|  |_/_/   \\_\\____/   |____/|_| \\_\\\\___/(_) "
+}
+                                                               
+                                                        
+offset = -130
 
 function _init()
  create_life(5) --arg is how many lives
@@ -57,7 +67,6 @@ function game_update()
 	if timeleft <= 0 then
 		timeleft = turntime
 	end
-	
 end
 
 function check_victory()
@@ -87,11 +96,21 @@ function game_draw()
 end
 
 function end_update()
+	camera(0,0)
 end
 
 function end_draw()
 	game_draw()
-	center_text("your mom",64,12)
+	camera(offset,0)
+	local l = 55
+	for ln,txt in pairs(losetext) do
+		print(txt,0,l,12)
+		l+= 5
+	end
+	if offset > 220 then
+		offset = -130
+	end
+	offset += 1
 end
 
 function center_text(str,y,col)
