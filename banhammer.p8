@@ -4,7 +4,8 @@ __lua__
 -- shenanijam 2017 game jam
 -- "slinging the banhammer"
 level = 0
-turntime = 50 -- in ticks
+turntime = 150
+timeleft = 1 * turntime -- in ticks
 new = true
 ents = {}
 cur = {x = 0,
@@ -47,9 +48,8 @@ function collect_ents()
 end
 
 function update_ents()
-	if turntime == 0 then
+	if timeleft == 0 then
 		infect()
-		turntime = 50
 	end
 end
 
@@ -106,8 +106,8 @@ function infect()
 end
 
 function _update()
-	turntime -= 1
-	if turntime % 10 == 0 then
+	timeleft -= 1
+	if timeleft % 10 == 0 then
 		cur.state += 1
 	end
 	if cur.state == 3 then
@@ -118,6 +118,9 @@ function _update()
 	update_ents()
 	last = ents
 	ents = {}
+	if timeleft <= 0 then
+		timeleft = turntime
+	end
 end
 		
 function printents(ent)
@@ -140,10 +143,13 @@ function draw_cursor()
 end
 
 function _draw()
-	rectfill(0,0,128,128,15)		
+	rectfill(0,0,128,128,0)		
 	draw_board()
+	
 	draw_cursor()
-	print(turntime,0,0,7)
+	
+	--debugging
+	print(timeleft,0,0,7)
 	foreach(last,printents)
 	last = {}
 	print(mget(4,6),10,0,7)
