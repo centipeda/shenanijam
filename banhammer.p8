@@ -11,12 +11,92 @@ hammers = {}
 cur = {x = 2,
 							y = 2,
 							state = 0}
-
 hearts={}
 hearttrans = {01,17}
 
 function _init()
  create_life(5) --arg is how many lives
+
+	-- initial game state is title
+	-- screen
+ _update = title_update
+ _draw = title_draw
+end
+
+function title_update()
+	if btnp(4) then
+		_update = game_update
+		_draw = game_draw
+	end
+end
+
+function title_draw()
+	rectfill(0,0,128,128,7)
+	center_text("press z to start",64,0)
+end
+
+function game_update()
+	timeleft -= 1
+	if timeleft % 10 == 0 then
+		cur.state += 1
+	end
+	if cur.state == 3 then
+		cur.state = 0
+	end
+	check_input()
+	update_hammers()
+	collect_ents()
+	if check_victory() then
+		_update = end_update
+		_draw = end_draw
+		return
+	end
+	update_ents()
+	last = ents
+	ents = {}
+	if timeleft <= 0 then
+		timeleft = turntime
+	end
+	
+end
+
+function check_victory()
+	if #hearts == 0 then
+		return true
+	end
+	for e in all(ents) do
+		if mget(e.x,e.y) == 40 then
+			return false			
+		end
+	end
+	return true
+end
+
+function game_draw()
+	rectfill(0,0,128,128,0)
+	draw_board()
+	draw_hammers()
+	draw_cursor()
+ draw_lives()
+
+	--debugging
+	print(timeleft,0,0,7)
+	foreach(last,printents)
+	last = {}
+	print(mget(20,6),10,0,7)
+end
+
+function end_update()
+end
+
+function end_draw()
+	game_draw()
+	center_text("your mom",64,12)
+end
+
+function center_text(str,y,col)
+	x = 64 - flr((#str*4)/2)
+	print(str,x,y,col)
 end
 
 function check_input()
@@ -35,14 +115,12 @@ function check_input()
   end 
 end
 
-function check_dropped(x,y)
- return true
-end
-
 function collect_ents()
 	-- loops through the entire map
 	-- and checks whether each sprite
 	-- is a troll/infected/normal
+	-- if so, adds to the current
+	-- frame's entity array
 	for x = 18, 30, 2 do
 		for y = 2, 30, 2	do
 			local state = mget(x,y)
@@ -173,26 +251,6 @@ end
 --if (#hearts <= 0) then
 --end
 
-function _update()
-	timeleft -= 1
-	if timeleft % 10 == 0 then
-		cur.state += 1
-	end
-	if cur.state == 3 then
-		cur.state = 0
-	end
-	check_input()
-	collect_ents()
-	update_ents()
-	last = ents
-	ents = {}
-	update_hammers()
-	if timeleft <= 0 then
-		timeleft = turntime
-	end
-
-end
-
 function printents(ent)
 	local y = 7
 	for a,b in pairs(ent) do
@@ -219,20 +277,6 @@ function draw_cursor()
 	spr(11+(cur.state*2),(cur.x+1)*8,cur.y*8)
 	spr(26+(cur.state*2),cur.x*8,(cur.y+1)*8)
 	spr(27+(cur.state*2),(cur.x+1)*8,(cur.y+1)*8)
-end
-
-function _draw()
-	rectfill(0,0,128,128,0)
-	draw_board()
-	draw_hammers()
-	draw_cursor()
- draw_lives()
-
-	--debugging
-	print(timeleft,0,0,7)
-	foreach(last,printents)
-	last = {}
-	print(mget(4,6),10,0,7)
 end
 
 __gfx__
