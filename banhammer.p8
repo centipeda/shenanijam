@@ -42,10 +42,11 @@ username = ""
 text = ""
 
 function set_board()
-	boardx = stage*32
 	if stage < 4 then
+		boardx = stage*32
 		boardy = 0
 	else
+		boardx = (stage - 4)*32
 		boardy = 16
 	end
 	entx = boardx + 16
@@ -78,19 +79,18 @@ function title_draw()
 end
 
 function game_update()
+	check_input()
 	timeleft -= 1
 	collect_ents()
 	update_ents()
-	if check_advance() then
-		increase_difficulty()
-		return
-	end
 	update_prompt()
 	update_cursor()
-	check_input() update_hammers() update_hit()
-	if check_loss() then
+	update_hammers()
+	update_hit()
+	if check_advance() then
+		increase_difficulty()
+	elseif check_loss() then
 		game_over()
-		return
 	end
 	ents = {}
 	-- reset frame count when turn elapses
@@ -164,14 +164,14 @@ function check_input()
 	local r = mget(x+2,y)
 	local u = mget(x,y-2)
 	local d = mget(x,y+2)
-	if btnp(0) and x >= 4 and l != 8 then
+	if btnp(0) and cur.x >= 4 and l != 8 then
 		cur.x -= 2
 	elseif btnp(1) and cur.x <= 10 and r != 8 then
 		cur.x += 2
 	end
-	if btnp(2) and y >= 4 and u != 8 then
+	if btnp(2) and cur.y >= 4 and u != 8 then
 		cur.y -= 2
-	elseif btnp(3) and y <= 10 and d != 8 then
+	elseif btnp(3) and cur.y <= 10 and d != 8 then
 		cur.y += 2
 	end
 	-- z to sling hammer
@@ -198,15 +198,17 @@ function check_advance()
 			mget(e.x,e.y) == 44 then
 			return false
 		end
+		-- printh(mget(e.x,e.y))
 	end
 	return true
 end
 
 function increase_difficulty()
-	-- transition_flash()
+	transition_flash()
 	stage = flr(rnd(9))
 	debug = stage
 	set_board()
+	_update()
 	-- local x = flr(rnd(6))*2 + boardx
 	-- local y = flr(rnd(6))*2 + boardy
 	-- mset(x+18,y+2,44)
@@ -235,7 +237,7 @@ function collect_ents()
 				state == 42 or
 				state == 44 then
 				add(ents,{x=x,y=y})
-				printh("x"..x.."y"..y)
+				-- printh("x"..x.."y"..y)
 			end
 		end
 	end
@@ -807,3 +809,4 @@ __music__
 00 41424344
 00 41424344
 00 41424344
+
