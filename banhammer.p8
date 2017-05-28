@@ -62,6 +62,8 @@ function game_update()
 	if check_loss() then
 		_update = end_update
 		_draw = end_draw
+  music(-1)
+  sfx(8)
     transition_flash()
 		return
 	end
