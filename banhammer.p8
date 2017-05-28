@@ -64,7 +64,15 @@ function game_update()
 	if check_loss() then
 		_update = end_update
 		_draw = end_draw
-    transition_flash()
+		for e in all(ents) do
+			if mget(e.x,e.y) == 44 then
+				mset(e.x,e.y,46)
+				mset(e.x+1,e.y,47)
+				mset(e.x,e.y+1,62)
+				mset(e.x+1,e.y+1,63)
+			end
+		end
+		transition_flash()
 		return
 	end
 	if check_advance() then
