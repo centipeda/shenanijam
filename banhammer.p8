@@ -49,46 +49,25 @@ end
 
 function title_draw()
 	--rectfill(0,0,128,128,7)
- cls(7)
+	cls(7)
 	center_text("press z to start",64,0)
 end
 
 function game_update()
-	if timeleft % 30 == 0 then
-		update_prompt()
-	end
 	timeleft -= 1
-	if timeleft % 10 == 0 then
-		cur.state += 1
-	end
-	if cur.state == 3 then
-		cur.state = 0
-	end
+	collect_ents()
+	update_prompt()
+	update_cursor()
 	check_input()
 	update_hammers()
-	collect_ents()
 	if check_loss() then
-		_update = end_update
-		_draw = end_draw
-		music(-1)
-		sfx(8)
-		for e in all(ents) do
-			if mget(e.x,e.y) == 44 then
-				mset(e.x,e.y,46)
-				mset(e.x+1,e.y,47)
-				mset(e.x,e.y+1,62)
-				mset(e.x+1,e.y+1,63)
-			end
-		end
-		transition_flash()
-		return
+		game_over()
 	end
 	if check_advance() then
 		increase_difficulty()
 	end
 	update_ents()
-	last = ents
-	ents = {}
+	-- reset frame count when turn elapses
 	if timeleft <= 0 then
 		timeleft = turntime
 	end
@@ -106,7 +85,6 @@ function game_draw()
 
 	--debugging
 	print(timeleft,0,0,7)
-	foreach(last,printents)
 	last = {}
 	print(mget(20,6),10,0,7)
 end
@@ -130,7 +108,39 @@ function end_draw()
 end
 
 function game_over()
+	_update = end_update
+	_draw = end_draw
+	music(-1)
+	sfx(8)
+	for e in all(ents) do
+		if mget(e.x,e.y) == 44 then
+			mset(e.x,e.y,46)
+			mset(e.x+1,e.y,47)
+			mset(e.x,e.y+1,62)
+			mset(e.x+1,e.y+1,63)
+		end
+	end
+	transition_flash()
+	return
+end
 
+-- let's check 'em inputs
+function check_input()
+	-- moving the cursor
+ if btnp(0) and cur.x >= 4 then
+		cur.x -= 2
+	elseif btnp(1) and cur.x <= 10 then
+		cur.x += 2
+	end
+	if btnp(2) and cur.y >= 4 then
+		cur.y -= 2
+	elseif btnp(3) and cur.y <= 10 then
+		cur.y += 2
+	end
+	-- z to sling hammer
+	if btnp(4) then
+		sling_hammer(cur.x,cur.y)
+  end
 end
 
 function check_loss()
@@ -165,43 +175,6 @@ function increase_difficulty()
 	level += 1
 end
 
-function center_text(str,y,col)
-	x = 64 - flr((#str*4)/2)
-	print(str,x,y,col)
-end
-
-function update_prompt()
-	nin = flr(rnd(#names)) + 1
-	tin = flr(rnd(#responses)) + 1
-	username = names[nin]
-	text = responses[tin]
-end
-
-function draw_prompt ()
-	final = "<"..username.."> "..text
-	rectfill(5,119,#final*4+5,126,0)
-	print(final,6,120,7)
-end
-
--- let's check 'em inputs
-function check_input()
-	-- moving the cursor
- if btnp(0) and cur.x >= 4 then
-		cur.x -= 2
-	elseif btnp(1) and cur.x <= 10 then
-		cur.x += 2
-	end
-	if btnp(2) and cur.y >= 4 then
-		cur.y -= 2
-	elseif btnp(3) and cur.y <= 10 then
-		cur.y += 2
-	end
-	-- z to sling hammer
-	if btnp(4) then
-		sling_hammer(cur.x,cur.y)
-  end
-end
-
 function collect_ents()
 	-- loops through the entire map
 	-- and checks whether each sprite
@@ -221,11 +194,6 @@ function collect_ents()
 	end
 end
 
-function update_ents()
-	if timeleft == 0 then
-		infect()
-	end
-end
 
 --slingin' hammers
 function sling_hammer(x,y)
@@ -287,6 +255,50 @@ function infect()
 	end
 end
 
+--- life or death
+function create_life(hcount)
+ hc = hcount or maxhealth
+ for i = 1,hc do
+  local heart = {}
+   heart.y = 60 - (i*8)
+   heart.x = 116
+   heart.sw = 1
+   heart.sh = 1
+   heart.mode = hearttrans[1]
+   heart.transform = hearttrans
+  add(hearts,heart)
+ end
+end
+
+function hurt_normal()
+	hearts[health].mode = 17
+	health -= 1
+end
+
+-- "update" functions
+
+function update_cursor()
+	if timeleft % 10 == 0 then
+		cur.state += 1
+	end
+	if cur.state == 3 then
+		cur.state = 0
+	end
+end
+
+function update_prompt()
+	if timeleft % 30 == 0 then
+		username = names[flr(rnd(#names)) + 1]
+		text = responses[flr(rnd(#responses)) + 1]
+	end
+end
+function update_ents()
+	if timeleft == 0 then
+		infect()
+	end
+	ents = {}
+end
+
 --hammer logic
 function update_hammers()
 	if timeleft % 5 == 0 then
@@ -309,19 +321,12 @@ function update_hammers()
 	end
 end
 
---- life or death
-function create_life(hcount)
- hc = hcount or maxhealth
- for i = 1,hc do
-  local heart = {}
-   heart.y = 60 - (i*8)
-   heart.x = 116
-   heart.sw = 1
-   heart.sh = 1
-   heart.mode = hearttrans[1]
-   heart.transform = hearttrans
-  add(hearts,heart)
- end
+-- draw functions
+
+function draw_prompt ()
+	final = "<"..username.."> "..text
+	rectfill(5,119,#final*4+5,126,0)
+	print(final,6,120,7)
 end
 
 function draw_lives()
@@ -330,19 +335,6 @@ end
 
 function draw_life(heart)
  spr(heart.mode,heart.x,heart.y,heart.sw,heart.sh)
-end
-
-function hurt_normal()
-	hearts[health].mode = 17
-	health -= 1
-end
-
-function printents(ent)
-	local y = 7
-	for a,b in pairs(ent) do
-		print(a.." "..b,0,y,8)
-		y += 7
-	end
 end
 
 function draw_board()
@@ -386,6 +378,12 @@ function draw_cursor()
 	spr(11+(cur.state*2),(cur.x+1)*8,cur.y*8)
 	spr(26+(cur.state*2),cur.x*8,(cur.y+1)*8)
 	spr(27+(cur.state*2),(cur.x+1)*8,(cur.y+1)*8)
+end
+
+-- helper functions
+function center_text(str,y,col)
+	x = 64 - flr((#str*4)/2)
+	print(str,x,y,col)
 end
 
 function transition_flash()
