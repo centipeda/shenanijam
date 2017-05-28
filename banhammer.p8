@@ -16,6 +16,7 @@ hearts={}
 hearttrans = {01,17}
 
 function _init()
+ reload()
  music(00)
  create_life(5) --arg is how many lives
 end
