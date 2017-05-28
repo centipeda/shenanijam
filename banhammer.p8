@@ -16,6 +16,7 @@ hearts={}
 hearttrans = {01,17}
 
 function _init()
+ music(00)
  create_life(5) --arg is how many lives
 end
 
@@ -138,6 +139,7 @@ function update_hammers()
 					mset(h.x+16,h.y+1,target+14)
 					mset(h.x+17,h.y+1,target+15)
     elseif fget(target) == 1 then --normal
+     sfx(00)
      hurt_normal()
 				end
 			end
