@@ -11,14 +11,137 @@ hammers = {}
 cur = {x = 2,
 							y = 2,
 							state = 0}
-
 hearts={}
 hearttrans = {01,17}
+losetext = {
+" _   _    __  __    _    ____     ____  ____   ___ ___ ",
+"| | | |  |  \\/  |  / \\  |  _ \\   | __ )|  _ \\ / _ \\__ \\ ",
+"| | | |  | |\\/| | / _ \\ | | | |  |  _ \\| |_) | | | |/ /",
+"| |_| |  | |  | |/ ___ \\| |_| |  | |_) |  _ <| |_| |_| ",
+" \\___/   |_|  |_/_/   \\_\\____/   |____/|_| \\_\\\\___/(_) "
+}
+                                                               
+                                                        
+offset = -130
 
 function _init()
  reload()
  music(00)
  create_life(5) --arg is how many lives
+
+	-- initial game state is title
+	-- screen
+ _update = title_update
+ _draw = title_draw
+end
+
+function title_update()
+	if btnp(4) then
+		_update = game_update
+		_draw = game_draw
+	end
+end
+
+function title_draw()
+	rectfill(0,0,128,128,7)
+	center_text("press z to start",64,0)
+end
+
+function game_update()
+	timeleft -= 1
+	if timeleft % 10 == 0 then
+		cur.state += 1
+	end
+	if cur.state == 3 then
+		cur.state = 0
+	end
+	check_input()
+	update_hammers()
+	collect_ents()
+	if check_loss() then
+		_update = end_update
+		_draw = end_draw
+    transition_flash()
+		return
+	end
+	if check_advance() then
+		increase_difficulty()
+	end
+	update_ents()
+	last = ents
+	ents = {}
+	if timeleft <= 0 then
+		timeleft = turntime
+	end
+end
+
+function game_draw()
+	rectfill(0,0,128,128,0)
+	draw_board()
+	draw_hammers()
+	draw_cursor()
+ draw_lives()
+ draw_timeleft()
+
+	--debugging
+	print(timeleft,0,0,7)
+	foreach(last,printents)
+	last = {}
+	print(mget(20,6),10,0,7)
+end
+
+function end_update()
+	camera(0,0)
+end
+
+function end_draw()
+	game_draw()
+	camera(offset,0)
+	local l = 55
+	for ln,txt in pairs(losetext) do
+		print(txt,0,l,12)
+		l+= 5
+	end
+	if offset > 220 then
+		offset = -130
+	end
+	offset += 1
+end
+
+function check_loss()
+	if #hearts == 0 then
+		return true
+	end
+	for e in all(ents) do
+		if mget(e.x,e.y) == 40 then
+			return false			
+		end
+	end
+	return true
+end
+
+function check_advance()
+	for e in all(ents) do
+		if mget(e.x,e.y) == 42 or
+			mget(e.x,e.y) == 44 then
+			return false	
+		end
+	end
+	return true
+end
+	
+function increase_difficulty()
+	transition_flash()
+	mset(18,2,44)
+	mset(19,2,45)
+	mset(18,3,60)
+	mset(19,3,61)
+	turntime -= 5
+end
+
+function center_text(str,y,col)
+	x = 64 - flr((#str*4)/2)
+	print(str,x,y,col)
 end
 
 -- let's check 'em inputs
@@ -34,19 +157,18 @@ function check_input()
 	elseif btnp(3) and cur.y <= 10 then
 		cur.y += 2
 	end
-	if btnp(4) then-- z to sling hammer
+	-- z to sling hammer
+	if btnp(4) then
 		sling_hammer(cur.x,cur.y)
- end 
-end
-
-function check_dropped(x,y)
- return true
+  end 
 end
 
 function collect_ents()
 	-- loops through the entire map
 	-- and checks whether each sprite
 	-- is a troll/infected/normal
+	-- if so, adds to the current
+	-- frame's entity array
 	for x = 18, 30, 2 do
 		for y = 2, 30, 2	do
 			local state = mget(x,y)
@@ -175,34 +297,6 @@ function hurt_normal()
  del(hearts,hearts[#hearts])
 end
 
-
---main update
-function _update()
-	timeleft -= 1
-	if timeleft % 10 == 0 then
-		cur.state += 1
-	end
-	if cur.state == 3 then
-		cur.state = 0
-	end
-	check_input()
-	collect_ents()
-	update_ents()
-	last = ents
-	ents = {}
-	update_hammers()
----deathhhhhh
- if (#hearts) <= 0 then
-  transition_flash()
-  _init()
- end
-
-	if timeleft <= 0 then
-		timeleft = turntime
-	end
-
-end
-
 function printents(ent)
 	local y = 7
 	for a,b in pairs(ent) do
@@ -226,9 +320,9 @@ end
 
 function draw_timeleft()
  w=64
- h=6
+ h=5
  x=64-w/2
- y=8-h/2
+ y=9-h/2
  colors={8,9,10,11}
  liquid_bg = 1
  border = 7
@@ -243,7 +337,8 @@ function draw_timeleft()
  rectfill(x+1,y,x+pw+1,y+h,border_bg)
  rectfill(x,y,x+pw,y+h,c)
  rect(x,y,x+w,y+h,border)
-
+	
+	-- center_text("time remaning",0,7)
 end
 
 function draw_cursor()
@@ -251,23 +346,6 @@ function draw_cursor()
 	spr(11+(cur.state*2),(cur.x+1)*8,cur.y*8)
 	spr(26+(cur.state*2),cur.x*8,(cur.y+1)*8)
 	spr(27+(cur.state*2),(cur.x+1)*8,(cur.y+1)*8)
-end
-
-function _draw()
-	rectfill(0,0,128,128,0)
-	draw_board()
-	draw_hammers()
-	draw_cursor()
- draw_lives()
- draw_timeleft()
-
-	--debugging
-	print(timeleft,0,0,10)
-	foreach(last,printents)
-	last = {}
-	print(mget(4,6),10,0,7)
- print(#hearts,16, 0, 15)
-
 end
 
 function transition_flash()
