@@ -58,11 +58,14 @@ function game_update()
 	check_input()
 	update_hammers()
 	collect_ents()
-	if check_victory() then
+	if check_loss() then
 		_update = end_update
 		_draw = end_draw
     transition_flash()
 		return
+	end
+	if check_advance() then
+		increase_difficulty()
 	end
 	update_ents()
 	last = ents
@@ -70,18 +73,6 @@ function game_update()
 	if timeleft <= 0 then
 		timeleft = turntime
 	end
-end
-
-function check_victory()
-	if #hearts == 0 then
-		return true
-	end
-	for e in all(ents) do
-		if mget(e.x,e.y) == 40 then
-			return false			
-		end
-	end
-	return true
 end
 
 function game_draw()
@@ -117,6 +108,37 @@ function end_draw()
 	offset += 1
 end
 
+function check_loss()
+	if #hearts == 0 then
+		return true
+	end
+	for e in all(ents) do
+		if mget(e.x,e.y) == 40 then
+			return false			
+		end
+	end
+	return true
+end
+
+function check_advance()
+	for e in all(ents) do
+		if mget(e.x,e.y) == 42 or
+			mget(e.x,e.y) == 44 then
+			return false	
+		end
+	end
+	return true
+end
+	
+function increase_difficulty()
+	transition_flash()
+	mset(18,2,44)
+	mset(19,2,45)
+	mset(18,3,60)
+	mset(19,3,61)
+	turntime -= 5
+end
+
 function center_text(str,y,col)
 	x = 64 - flr((#str*4)/2)
 	print(str,x,y,col)
@@ -135,7 +157,8 @@ function check_input()
 	elseif btnp(3) and cur.y <= 10 then
 		cur.y += 2
 	end
-	if btnp(4) then-- z to sling hammer
+	-- z to sling hammer
+	if btnp(4) then
 		sling_hammer(cur.x,cur.y)
   end 
 end
@@ -297,9 +320,9 @@ end
 
 function draw_timeleft()
  w=64
- h=6
+ h=5
  x=64-w/2
- y=8-h/2
+ y=9-h/2
  colors={8,9,10,11}
  liquid_bg = 1
  border = 7
@@ -314,7 +337,8 @@ function draw_timeleft()
  rectfill(x+1,y,x+pw+1,y+h,border_bg)
  rectfill(x,y,x+pw,y+h,c)
  rect(x,y,x+w,y+h,border)
-
+	
+	-- center_text("time remaning",0,7)
 end
 
 function draw_cursor()
