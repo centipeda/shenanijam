@@ -152,8 +152,8 @@ function create_life(hcount)
  hc = hcount or 3
  for i = 1,hc do
   local heart = {}
-   heart.x = 128 - (i*8)
-   heart.y = 1
+   heart.y = 60 - (i*8)
+   heart.x = 116
    heart.sw = 1
    heart.sh = 1
    heart.mode = hearttrans[1]
