@@ -86,6 +86,7 @@ function game_draw()
 	draw_lives()
 	draw_timeleft()
 	draw_prompt()
+	draw_score()
 
 	--debugging
 	print(timeleft,0,0,7)
@@ -123,7 +124,7 @@ function game_over()
 			mset(e.x+1,e.y+1,63)
 		end
 	end
-	transition_flash()
+	transition_flash(8)
 	return
 end
 
@@ -170,12 +171,19 @@ end
 
 function increase_difficulty()
 	transition_flash()
-	mset(18,2,44)
-	mset(19,2,45)
-	mset(18,3,60)
-	mset(19,3,61)
-	turntime -= 5
+	local x = flr(rnd(6))*2
+	local y = flr(rnd(6))*2
+	mset(x+18,y+2,44)
+	mset(x+19,y+2,45)
+	mset(x+18,y+3,60)
+	mset(x+19,y+3,61)
+	turntime -= 1
 	level += 1
+	-- roll health back to maximum
+	for h in all(hearts) do
+		h.mode= 1
+	end
+	health = maxhealth
 end
 
 function collect_ents()
@@ -386,6 +394,10 @@ function draw_cursor()
 	spr(27+(cur.state*2),(cur.x+1)*8,(cur.y+1)*8)
 end
 
+function draw_score()
+	print("round "..level,1,10,7)
+end
+
 -- helper functions
 
 function shake_camera()
@@ -404,8 +416,9 @@ function center_text(str,y,col)
 	print(str,x,y,col)
 end
 
-function transition_flash()
+function transition_flash(c)
  -- flash from one room dungeon by trasevol_dog
+ c = c or 3
  cls(6)
  flip()
  flip()
@@ -418,7 +431,7 @@ function transition_flash()
  cls(5)
  flip()
  flip()
- cls(3)
+ cls(c)
  flip()
  flip()
  cls(0)
