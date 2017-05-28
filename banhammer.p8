@@ -3,6 +3,7 @@ version 8
 __lua__
 -- shenanijam 2017 game jam
 -- "slinging the banhammer"
+level = 0
 turntime = 50
 timeleft = turntime -- in ticks
 new = true
@@ -12,6 +13,8 @@ cur = {x = 2,
 							y = 2,
 							state = 0}
 hearts={}
+maxhealth = 5
+health = maxhealth
 hearttrans = {01,17}
 losetext = {
 " _   _    __  __    _    ____     ____  ____   ___ ___ ",
@@ -20,14 +23,14 @@ losetext = {
 "| |_| |  | |  | |/ ___ \\| |_| |  | |_) |  _ <| |_| |_| ",
 " \\___/   |_|  |_/_/   \\_\\____/   |____/|_| \\_\\\\___/(_) "
 }
-                                                               
-                                                        
+
+
 offset = -130
 
 function _init()
  reload()
  music(00)
- create_life(5) --arg is how many lives
+ create_life(maxhealth) --arg is how many lives
 
 	-- initial game state is title
 	-- screen
@@ -113,12 +116,12 @@ function end_draw()
 end
 
 function check_loss()
-	if #hearts == 0 then
+	if health == 0 then
 		return true
 	end
 	for e in all(ents) do
 		if mget(e.x,e.y) == 40 then
-			return false			
+			return false
 		end
 	end
 	return true
@@ -128,12 +131,12 @@ function check_advance()
 	for e in all(ents) do
 		if mget(e.x,e.y) == 42 or
 			mget(e.x,e.y) == 44 then
-			return false	
+			return false
 		end
 	end
 	return true
 end
-	
+
 function increase_difficulty()
 	transition_flash()
 	mset(18,2,44)
@@ -141,6 +144,7 @@ function increase_difficulty()
 	mset(18,3,60)
 	mset(19,3,61)
 	turntime -= 5
+	level += 1
 end
 
 function center_text(str,y,col)
@@ -164,7 +168,7 @@ function check_input()
 	-- z to sling hammer
 	if btnp(4) then
 		sling_hammer(cur.x,cur.y)
-  end 
+  end
 end
 
 function collect_ents()
@@ -276,7 +280,7 @@ end
 
 --- life or death
 function create_life(hcount)
- hc = hcount or 3
+ hc = hcount or maxhealth
  for i = 1,hc do
   local heart = {}
    heart.y = 60 - (i*8)
@@ -298,7 +302,8 @@ function draw_life(heart)
 end
 
 function hurt_normal()
- del(hearts,hearts[#hearts])
+	hearts[health].mode = 17
+	health -= 1
 end
 
 function printents(ent)
@@ -341,7 +346,7 @@ function draw_timeleft()
  rectfill(x+1,y,x+pw+1,y+h,border_bg)
  rectfill(x,y,x+pw,y+h,c)
  rect(x,y,x+w,y+h,border)
-	
+
 	-- center_text("time remaning",0,7)
 end
 
@@ -669,4 +674,3 @@ __music__
 00 41424344
 00 41424344
 00 41424344
-
