@@ -1,13 +1,19 @@
 pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
-		-- shenanijam 2017 game jam
+-- shenanijam 2017 game jam
 -- "slinging the banhammer"
+debug = ""
 shaking = false
 shakemax = 5
 shaketime = shakemax
-level = 0
-turntime = 50
+stage = 0
+boardx = 0
+boardy = 0
+entx = 0
+enty = 0
+round = 1
+turntime = 25
 timeleft = turntime -- in ticks
 new = true
 ents = {}
@@ -28,22 +34,34 @@ losetext = {
 " \\___/   |_|  |_/_/   \\_\\____/   |____/|_| \\_\\\\___/(_) "
 }
 offset = -130
-names = {"trollmaster","user283","xell0s","centipeda", "tyler1", "unidan"}
+names = {"trollmaster","user283","xell0s","centipeda", "tyler1", "unidan","ian"}
 responses = {"nazi mods!","curses!","nooooo!", "ban wave!", "biologist here!",
 "it wasn't me!","'cuz i'm purple?","powertrip much?","mods = hoa",
 "i paid though!"}
 username = ""
 text = ""
 
+function set_board()
+	boardx = stage * 8
+	if stage < 4 then
+		boardy = 0
+	else
+		boardy = 16
+	end
+	entx = boardx + 16
+	enty = boardy
+end
+
 function _init()
- reload()
- music(00)
- create_life(maxhealth) --arg is how many lives
+	reload()
+	music(00)
+	create_life(maxhealth) --arg is how many lives
+	set_board()
 
 	-- initial game state is title
 	-- screen
- _update = title_update
- _draw = title_draw
+	_update = title_update
+	_draw = title_draw
 end
 
 function title_update()
@@ -72,7 +90,12 @@ function game_update()
 		return
 	end
 	if check_advance() then
-		increase_difficulty() end update_ents()
+		increase_difficulty()
+		return
+	end
+	update_ents()
+	debug = #ents
+	ents = {}
 	-- reset frame count when turn elapses
 	if timeleft <= 0 then
 		timeleft = turntime
@@ -95,7 +118,7 @@ function game_draw()
 
 	--debugging
 	print(timeleft,0,0,7)
-	print(mget(20,6),10,0,7)
+	print(debug,10,0,7)
 end
 
 function end_update()
@@ -153,7 +176,7 @@ function check_input()
 	-- z to sling hammer
 	if btnp(4) then
 		sling_hammer(cur.x,cur.y)
-  end
+	end
 end
 
 function check_loss()
@@ -180,14 +203,16 @@ end
 
 function increase_difficulty()
 	transition_flash()
-	local x = flr(rnd(6))*2
-	local y = flr(rnd(6))*2
-	mset(x+18,y+2,44)
-	mset(x+19,y+2,45)
-	mset(x+18,y+3,60)
-	mset(x+19,y+3,61)
+	stage = flr(rnd(8))
+	set_board()
+	-- local x = flr(rnd(6))*2 + boardx
+	-- local y = flr(rnd(6))*2 + boardy
+	-- mset(x+18,y+2,44)
+	-- mset(x+19,y+2,45)
+	-- mset(x+18,y+3,60)
+	-- mset(x+19,y+3,61)
 	turntime -= 1
-	level += 1
+	round += 1
 	-- roll health back to maximum
 	for h in all(hearts) do
 		h.mode= 1
@@ -201,15 +226,13 @@ function collect_ents()
 	-- is a troll/infected/normal
 	-- if so, adds to the current
 	-- frame's entity array
-	for x = 18, 30, 2 do
-		for y = 2, 30, 2	do
+	for x = entx,entx+16 do
+		for y = enty,enty+16 do
 			local state = mget(x,y)
 			if state == 40 or
-						state == 42 or
-						state == 44 then
-				add(ents,{x=x,
-														y=y,
-														hit=0})
+				state == 42 or
+				state == 44 then
+				add(ents,{x=x,y=y})
 			end
 		end
 	end
@@ -278,17 +301,17 @@ end
 
 --- life or death
 function create_life(hcount)
- hc = hcount or maxhealth
- for i = 1,hc do
-  local heart = {}
-   heart.y = 60 - (i*8)
-   heart.x = 116
-   heart.sw = 1
-   heart.sh = 1
-   heart.mode = hearttrans[1]
-   heart.transform = hearttrans
-  add(hearts,heart)
- end
+	hc = hcount or maxhealth
+	for i = 1,hc do
+		local heart = {}
+		heart.y = 60 - (i*8)
+		heart.x = 116
+		heart.sw = 1
+		heart.sh = 1
+		heart.mode = hearttrans[1]
+		heart.transform = hearttrans
+		add(hearts,heart)
+	end
 end
 
 function hurt_normal()
@@ -327,13 +350,11 @@ function update_ents()
 	if timeleft == 0 then
 		infect()
 	end
-	ents = {}
 end
 
 --hammer logic
 function update_hammers()
 	if timeleft % 5 == 0 then
-
 		for h in all(hammers) do
 			h.state += 1
 			if h.state == 4 then
@@ -387,16 +408,18 @@ function draw_prompt()
 end
 
 function draw_lives()
- foreach(hearts,draw_life)
+	foreach(hearts,draw_life)
 end
 
 function draw_life(heart)
- spr(heart.mode,heart.x,heart.y,heart.sw,heart.sh)
+	spr(heart.mode,heart.x,heart.y,heart.sw,heart.sh)
 end
 
 function draw_board()
-	map(0,0,0,0,16,16)
- map(16,0,0,0,16,16)
+	-- gameboard
+	map(boardx,boardy,0,0,16,16)
+	-- entity board
+	map(entx,enty,0,0,16,16)
 end
 
 function draw_hammers()
@@ -408,24 +431,24 @@ function draw_hammers()
 end
 
 function draw_timeleft()
- w=64
- h=5
- x=64-w/2
- y=9-h/2
- colors={8,9,10,11}
- liquid_bg = 1
- border = 7
- border_bg = 2
+	w=64
+	h=5
+	x=64-w/2
+	y=9-h/2
+	colors={8,9,10,11}
+	liquid_bg = 1
+	border = 7
+	border_bg = 2
 
- c=colors[flr(#colors/turntime * timeleft)+1]
- pw = w/turntime * timeleft
- if turntime%timeleft<=timeleft/2 and timeleft<turntime/#colors then
-  c=7
- end
- rect(x+1,y+1,x+w+1,y+h+1,liquid_bg)
- rectfill(x+1,y,x+pw+1,y+h,border_bg)
- rectfill(x,y,x+pw,y+h,c)
- rect(x,y,x+w,y+h,border)
+	c=colors[flr(#colors/turntime * timeleft)+1]
+	pw = w/turntime * timeleft
+	if turntime%timeleft<=timeleft/2 and timeleft<turntime/#colors then
+		c=7
+	end
+	rect(x+1,y+1,x+w+1,y+h+1,liquid_bg)
+	rectfill(x+1,y,x+pw+1,y+h,border_bg)
+	rectfill(x,y,x+pw,y+h,c)
+	rect(x,y,x+w,y+h,border)
 
 	-- center_text("time remaning",0,7)
 end
@@ -438,7 +461,7 @@ function draw_cursor()
 end
 
 function draw_score()
-	print("round "..level,1,10,7)
+	print("round "..round,1,10,7)
 end
 
 -- helper functions
@@ -460,25 +483,25 @@ function center_text(str,y,col)
 end
 
 function transition_flash(c)
- -- flash from one room dungeon by trasevol_dog
- c = c or 3
- cls(6)
- flip()
- flip()
- cls(7)
- flip()
- flip()
- cls(6)
- flip()
- flip()
- cls(5)
- flip()
- flip()
- cls(c)
- flip()
- flip()
- cls(0)
- flip()
+	-- flash from one room dungeon by trasevol_dog
+	c = c or 3
+	cls(6)
+	flip()
+	flip()
+	cls(7)
+	flip()
+	flip()
+	cls(6)
+	flip()
+	flip()
+	cls(5)
+	flip()
+	flip()
+	cls(c)
+	flip()
+	flip()
+	cls(0)
+	flip()
 end
 
 __gfx__
@@ -777,4 +800,3 @@ __music__
 00 41424344
 00 41424344
 00 41424344
-
