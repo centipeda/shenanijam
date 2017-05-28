@@ -86,7 +86,6 @@ function game_draw()
 
 	--debugging
 	print(timeleft,0,0,7)
-	last = {}
 	print(mget(20,6),10,0,7)
 end
 
@@ -704,4 +703,3 @@ __music__
 00 41424344
 00 41424344
 00 41424344
-
