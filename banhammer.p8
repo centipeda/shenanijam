@@ -3,6 +3,9 @@ version 8
 __lua__
 -- shenanijam 2017 game jam
 -- "slinging the banhammer"
+shaking = false
+shakemax = 5
+shaketime = shakemax
 level = 0
 turntime = 50
 timeleft = turntime -- in ticks
@@ -65,9 +68,7 @@ function game_update()
 		return
 	end
 	if check_advance() then
-		increase_difficulty()
-	end
-	update_ents()
+		increase_difficulty() end update_ents()
 	-- reset frame count when turn elapses
 	if timeleft <= 0 then
 		timeleft = turntime
@@ -77,7 +78,9 @@ end
 function game_draw()
 	--rectfill(0,0,128,128,0)
 	cls(0)
+	shake_camera()
 	draw_board()
+	camera()
 	draw_hammers()
 	draw_cursor()
 	draw_lives()
@@ -306,15 +309,18 @@ function update_hammers()
 			h.state += 1
 			if h.state == 4 then
 				target = mget(h.x+16,h.y)
-				if fget(target) > 1 then --troll or infeced
-     sfx(5)
+				if fget(target) > 1 then
+					-- turn troll or infected
+					-- back to normal
+					sfx(5)
 					mset(h.x+16,h.y,target-2)
 					mset(h.x+17,h.y,target-1)
 					mset(h.x+16,h.y+1,target+14)
 					mset(h.x+17,h.y+1,target+15)
-    elseif fget(target) == 1 then --normal
-     sfx(00)
-     hurt_normal()
+				elseif fget(target) == 1 then --normal
+					sfx(00)
+					hurt_normal()
+					shaking = true
 				end
 			end
 		end
@@ -381,6 +387,18 @@ function draw_cursor()
 end
 
 -- helper functions
+
+function shake_camera()
+	if shaking then
+		shaketime -= 1
+		camera(cos(shaketime/3),cos(shaketime/2))
+		if shaketime <= 0 then
+			shaketime = shakemax
+			shaking = false
+		end
+	end
+end
+
 function center_text(str,y,col)
 	x = 64 - flr((#str*4)/2)
 	print(str,x,y,col)
