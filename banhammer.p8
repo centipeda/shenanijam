@@ -62,6 +62,7 @@ function game_update()
 	update_hammers()
 	if check_loss() then
 		game_over()
+		return
 	end
 	if check_advance() then
 		increase_difficulty()
