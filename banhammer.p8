@@ -23,9 +23,11 @@ losetext = {
 "| |_| |  | |  | |/ ___ \\| |_| |  | |_) |  _ <| |_| |_| ",
 " \\___/   |_|  |_/_/   \\_\\____/   |____/|_| \\_\\\\___/(_) "
 }
-
-
 offset = -130
+names = {"trollmaster","user283","xell0s","centipeda"}
+responses = {"nazi mods!","curses!","nooooo!"}
+username = ""
+text = ""
 
 function _init()
  reload()
@@ -52,6 +54,9 @@ function title_draw()
 end
 
 function game_update()
+	if timeleft % 30 == 0 then
+		update_prompt()
+	end
 	timeleft -= 1
 	if timeleft % 10 == 0 then
 		cur.state += 1
@@ -65,8 +70,8 @@ function game_update()
 	if check_loss() then
 		_update = end_update
 		_draw = end_draw
-  music(-1)
-  sfx(8)
+		music(-1)
+		sfx(8)
 		for e in all(ents) do
 			if mget(e.x,e.y) == 44 then
 				mset(e.x,e.y,46)
@@ -91,12 +96,13 @@ end
 
 function game_draw()
 	--rectfill(0,0,128,128,0)
- cls(0)
+	cls(0)
 	draw_board()
 	draw_hammers()
 	draw_cursor()
- draw_lives()
- draw_timeleft()
+	draw_lives()
+	draw_timeleft()
+	draw_prompt()
 
 	--debugging
 	print(timeleft,0,0,7)
@@ -121,6 +127,10 @@ function end_draw()
 		offset = -130
 	end
 	offset += 1
+end
+
+function game_over()
+
 end
 
 function check_loss()
@@ -158,6 +168,19 @@ end
 function center_text(str,y,col)
 	x = 64 - flr((#str*4)/2)
 	print(str,x,y,col)
+end
+
+function update_prompt()
+	nin = flr(rnd(#names)) + 1
+	tin = flr(rnd(#responses)) + 1
+	username = names[nin]
+	text = responses[tin]
+end
+
+function draw_prompt ()
+	final = "<"..username.."> "..text
+	rectfill(5,119,#final*4+5,126,0)
+	print(final,6,120,7)
 end
 
 -- let's check 'em inputs
