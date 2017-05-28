@@ -224,6 +224,28 @@ function draw_hammers()
 	end
 end
 
+function draw_timeleft()
+ w=64
+ h=6
+ x=64-w/2
+ y=8-h/2
+ colors={8,9,10,11}
+ liquid_bg = 1
+ border = 7
+ border_bg = 2
+
+ c=colors[flr(#colors/turntime * timeleft)+1]
+ pw = w/turntime * timeleft
+ if turntime%timeleft<=timeleft/2 and timeleft<turntime/#colors then
+  c=7
+ end
+ rect(x+1,y+1,x+w+1,y+h+1,liquid_bg)
+ rectfill(x+1,y,x+pw+1,y+h,border_bg)
+ rectfill(x,y,x+pw,y+h,c)
+ rect(x,y,x+w,y+h,border)
+
+end
+
 function draw_cursor()
 	spr(10+(cur.state*2),cur.x*8,cur.y*8)
 	spr(11+(cur.state*2),(cur.x+1)*8,cur.y*8)
@@ -237,9 +259,10 @@ function _draw()
 	draw_hammers()
 	draw_cursor()
  draw_lives()
+ draw_timeleft()
 
 	--debugging
-	print(timeleft,0,0,7)
+	print(timeleft,0,0,10)
 	foreach(last,printents)
 	last = {}
 	print(mget(4,6),10,0,7)
