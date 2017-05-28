@@ -24,8 +24,8 @@ losetext = {
 " \\___/   |_|  |_/_/   \\_\\____/   |____/|_| \\_\\\\___/(_) "
 }
 offset = -130
-names = {"trollmaster","user283","xell0s","centipeda"}
-responses = {"nazi mods!","curses!","nooooo!"}
+names = {"trollmaster","user283","xell0s","centipeda", "tyler1", "unidan"}
+responses = {"nazi mods!","curses!","nooooo!", "ban wave!", "biologist here!", "it wasn't me!", "'cuz i'm purple?", "powertrip much?"}
 username = ""
 text = ""
 
@@ -704,3 +704,4 @@ __music__
 00 41424344
 00 41424344
 00 41424344
+
